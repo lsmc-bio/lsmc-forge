@@ -1,6 +1,6 @@
 "use client";
 
-import { useChat } from "@ai-sdk/react";
+import { useChat } from "ai/react";
 import Link from "next/link";
 
 export default function DealAgent() {
@@ -30,8 +30,8 @@ export default function DealAgent() {
                 Describe a deal scenario to get started.
               </p>
               <p className="mt-2 text-sm text-zinc-600">
-                &quot;Enterprise pharma, 10K samples, SR 30x WGS, CLIA, full
-                logistics&quot;
+                &quot;Enterprise pharma, 10K samples/yr, SR 30x WGS, CLIA,
+                full logistics&quot;
               </p>
             </div>
           </div>
