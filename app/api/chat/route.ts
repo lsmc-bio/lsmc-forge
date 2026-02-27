@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import { anthropic } from "@ai-sdk/anthropic";
 import { streamText, tool } from "ai";
 import { z } from "zod";
@@ -220,6 +221,11 @@ const dealInputSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export async function POST(req: Request) {
+  const session = await auth();
+  if (!session) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
   const { messages } = await req.json();
 
   const result = streamText({
