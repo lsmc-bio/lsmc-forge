@@ -17,7 +17,7 @@ const modules = [
   },
   {
     name: "Genome Performance Explorer",
-    href: "/bed-viz",
+    href: "/genome-explorer",
     description:
       "Browse genes, build panels, and see how your targets perform on LSMC's clinical genome.",
     status: "Prototype",
