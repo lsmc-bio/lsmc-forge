@@ -62,7 +62,7 @@ export interface SampleCharacteristics {
 export interface TestConfiguration {
   shortReadPlatform: "illumina" | "ultima" | "both" | "none";
   longReadPlatform: "ont" | "none";
-  shortReadDepth: "15x" | "20x" | "30x" | "40x";
+  shortReadDepth: "0.5x" | "1x" | "1.5x" | "5x" | "15x" | "20x" | "30x" | "40x";
   longReadDepth: "5x" | "10x" | "15x" | "none";
   assayType: "wgs" | "wes" | "panel" | "lowpass";
   addOns: ("pgx" | "mtdna" | "sv_cnv" | "methylation")[];
