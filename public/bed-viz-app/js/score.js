@@ -79,9 +79,9 @@
     }
   }
 
-  // ── File Upload ────────────────────────────────────────────────
-  var fileInput = document.getElementById('scoreFileInput');
-  document.getElementById('scoreUploadBtn').addEventListener('click', function() { fileInput.click(); });
+  // ── File Upload (Build tab controls) ───────────────────────────
+  var fileInput = document.getElementById('buildFileInput');
+  document.getElementById('buildUploadBtn').addEventListener('click', function() { fileInput.click(); });
   fileInput.addEventListener('change', function(e) { if (e.target.files.length) handleFile(e.target.files[0]); });
 
   // Page-level drag and drop
@@ -129,7 +129,7 @@
 
   // ── Score-tab presets ──────────────────────────────────────────
   function renderScorePresets() {
-    var container = document.getElementById('scorePresets');
+    var container = document.getElementById('buildTabPresets');
     var keys = Object.keys(PANEL_PRESETS);
     keys.forEach(function(key) {
       var preset = PANEL_PRESETS[key];

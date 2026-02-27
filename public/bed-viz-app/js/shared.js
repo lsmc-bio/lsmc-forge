@@ -8,7 +8,7 @@ window.APP = {
   currentDepth: 30,
   currentBedRegions: [],
   currentPanelName: '',
-  activeTab: 'browse',
+  activeTab: 'build',
 
   // ── Event bus (simple pub/sub) ─────────────────────────────────
   _listeners: {},
