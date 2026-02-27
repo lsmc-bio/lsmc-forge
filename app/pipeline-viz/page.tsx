@@ -795,7 +795,7 @@ function StageSection({ stage, index }: { stage: StageData; index: number }) {
     <section
       id={stage.id}
       data-stage={index}
-      className="stage-observer flex min-h-screen items-start justify-center px-4 pt-24 pb-16 sm:px-6"
+      className="stage-observer flex min-h-[70vh] items-start justify-center px-4 pt-20 pb-12 sm:px-6 opacity-0 translate-y-8 transition-all duration-700 ease-out"
     >
       <div className="grid w-full max-w-5xl grid-cols-1 items-start gap-10 lg:grid-cols-2">
         {/* Left: text */}
@@ -945,9 +945,10 @@ export default function PipelineViz() {
   const [activeStage, setActiveStage] = useState(-1);
   const stageRefs = useRef<Map<number, Element>>(new Map());
 
-  // IntersectionObserver for LIMS ribbon tracking
+  // IntersectionObserver for LIMS ribbon tracking + scroll-triggered fade-in
   useEffect(() => {
-    const observer = new IntersectionObserver(
+    // Ribbon tracking (tight threshold)
+    const ribbonObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
@@ -961,11 +962,31 @@ export default function PipelineViz() {
       { rootMargin: "-40% 0px -40% 0px" }
     );
 
+    // Fade-in on scroll (generous threshold so it fires early)
+    const fadeObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const el = entry.target as HTMLElement;
+            el.style.opacity = "1";
+            el.style.transform = "translateY(0)";
+          }
+        });
+      },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.05 }
+    );
+
     // Observe all stage sections
     const sections = document.querySelectorAll(".stage-observer");
-    sections.forEach((s) => observer.observe(s));
+    sections.forEach((s) => {
+      ribbonObserver.observe(s);
+      fadeObserver.observe(s);
+    });
 
-    return () => observer.disconnect();
+    return () => {
+      ribbonObserver.disconnect();
+      fadeObserver.disconnect();
+    };
   }, []);
 
   const scrollToStage = useCallback((i: number) => {

@@ -79,9 +79,9 @@
     }
   }
 
-  // ── File Upload ────────────────────────────────────────────────
-  var fileInput = document.getElementById('scoreFileInput');
-  document.getElementById('scoreUploadBtn').addEventListener('click', function() { fileInput.click(); });
+  // ── File Upload (Build tab controls) ───────────────────────────
+  var fileInput = document.getElementById('buildFileInput');
+  document.getElementById('buildUploadBtn').addEventListener('click', function() { fileInput.click(); });
   fileInput.addEventListener('change', function(e) { if (e.target.files.length) handleFile(e.target.files[0]); });
 
   // Page-level drag and drop
@@ -129,7 +129,7 @@
 
   // ── Score-tab presets ──────────────────────────────────────────
   function renderScorePresets() {
-    var container = document.getElementById('scorePresets');
+    var container = document.getElementById('buildTabPresets');
     var keys = Object.keys(PANEL_PRESETS);
     keys.forEach(function(key) {
       var preset = PANEL_PRESETS[key];
@@ -145,6 +145,7 @@
         var regions = preset.genes.map(function(g) {
           return { chr: g.chr, start: g.start, end: g.end, name: g.symbol };
         });
+        APP.switchTab('score');
         runAnalysis(regions, preset.name);
       });
       container.appendChild(btn);
@@ -160,25 +161,41 @@
     wgCount.textContent = '3.1 Gb';
     wgBtn.appendChild(wgCount);
     wgBtn.addEventListener('click', function() {
-      var wgRegions = [];
-      for (var ci = 0; ci < CHROMOSOMES.length; ci++) {
-        var chr = CHROMOSOMES[ci];
-        var nRegions = Math.max(3, Math.floor(chr.len / 15000000));
-        for (var ri = 0; ri < nRegions; ri++) {
-          var start = Math.floor((ri / nRegions) * chr.len * 0.95);
-          var size = 50000 + Math.floor(Math.random() * 200000);
-          wgRegions.push({ chr: chr.name, start: start, end: start + size, name: chr.name.replace('chr','') + 'p' + (ri+1) });
-        }
-      }
-      GENE_DB.forEach(function(g) {
-        wgRegions.push({ chr: g.chr, start: g.start, end: g.end, name: g.symbol });
-      });
-      runAnalysis(wgRegions, 'Whole Genome');
+      APP.switchTab('score');
+      runWholeGenome();
     });
     container.appendChild(wgBtn);
   }
 
+  // ── Whole Genome region generator (reused for default + button) ──
+  function buildWholeGenomeRegions() {
+    var wgRegions = [];
+    for (var ci = 0; ci < CHROMOSOMES.length; ci++) {
+      var chr = CHROMOSOMES[ci];
+      var nRegions = Math.max(3, Math.floor(chr.len / 15000000));
+      for (var ri = 0; ri < nRegions; ri++) {
+        var start = Math.floor((ri / nRegions) * chr.len * 0.95);
+        var size = 50000 + Math.floor(Math.random() * 200000);
+        wgRegions.push({ chr: chr.name, start: start, end: start + size, name: chr.name.replace('chr','') + 'p' + (ri+1) });
+      }
+    }
+    GENE_DB.forEach(function(g) {
+      wgRegions.push({ chr: g.chr, start: g.start, end: g.end, name: g.symbol });
+    });
+    return wgRegions;
+  }
+
+  function runWholeGenome() {
+    runAnalysis(buildWholeGenomeRegions(), 'Whole Genome');
+  }
+
   renderScorePresets();
+
+  // ── Auto-run Whole Genome on page load ────────────────────────────
+  setTimeout(function() {
+    APP.switchTab('score');
+    runWholeGenome();
+  }, 300);
 
   // ── Analysis Pipeline ──────────────────────────────────────────
   function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }

@@ -17,13 +17,13 @@
 
   <!-- ── TAB NAVIGATION ──────────────────────────────────────────── -->
   <nav class="tab-nav">
-    <button class="tab-nav-btn active" data-tab="browse" onclick="APP.switchTab('browse')">Browse</button>
-    <button class="tab-nav-btn" data-tab="build" onclick="APP.switchTab('build')">Build <span class="tab-badge" id="buildBadge"></span></button>
+    <button class="tab-nav-btn" data-tab="browse" onclick="APP.switchTab('browse')">Browse</button>
+    <button class="tab-nav-btn active" data-tab="build" onclick="APP.switchTab('build')">Build <span class="tab-badge" id="buildBadge"></span></button>
     <button class="tab-nav-btn" data-tab="score" onclick="APP.switchTab('score')">Score</button>
   </nav>
 
   <!-- ── DEPTH SELECTOR (shared across tabs) ─────────────────────── -->
-  <div class="depth-selector">
+  <div class="depth-selector" style="justify-content:center;align-items:center;">
     <span style="font-size:0.8rem;color:var(--text-dim);padding:0.4rem 0;">Coverage depth:</span>
     <button class="depth-btn" onclick="setDepth(15, this)">15x</button>
     <button class="depth-btn" onclick="setDepth(20, this)">20x</button>
@@ -36,7 +36,7 @@
   <!-- ═══════════════════════════════════════════════════════════════
        BROWSE TAB — Gene search + coverage track
        ═══════════════════════════════════════════════════════════════ -->
-  <div class="tab-pane active" id="tab-browse">
+  <div class="tab-pane" id="tab-browse">
 
     <div class="browse-search-wrap">
       <span class="browse-search-icon">&#x1F50D;</span>
@@ -103,7 +103,24 @@
   <!-- ═══════════════════════════════════════════════════════════════
        BUILD TAB — Panel builder / shopping cart
        ═══════════════════════════════════════════════════════════════ -->
-  <div class="tab-pane" id="tab-build">
+  <div class="tab-pane active" id="tab-build">
+
+    <!-- Upload + Presets (moved from Score tab) -->
+    <div class="upload-section">
+      <div class="upload-col">
+        <h4>Upload your panel</h4>
+        <div>
+          <button class="upload-btn" id="buildUploadBtn">Upload BED file</button>
+          <input type="file" id="buildFileInput" accept=".bed,.txt,.tsv,.csv" style="display:none;">
+        </div>
+        <span class="upload-hint">Standard BED format (chr, start, end) &mdash; or drag a file anywhere on the page</span>
+        <div class="upload-drop-hint">Drop your BED file here</div>
+      </div>
+      <div class="score-preset-panel">
+        <h4>Or choose a preset panel</h4>
+        <div id="buildTabPresets"></div>
+      </div>
+    </div>
 
     <div class="build-layout">
       <div class="build-main">
@@ -184,23 +201,6 @@
        SCORE TAB — Genome viz + summary cards + detail tables
        ═══════════════════════════════════════════════════════════════ -->
   <div class="tab-pane" id="tab-score">
-
-    <!-- Upload + Presets -->
-    <div class="upload-section">
-      <div class="upload-col">
-        <h4>Upload your panel</h4>
-        <div>
-          <button class="upload-btn" id="scoreUploadBtn">Upload BED file</button>
-          <input type="file" id="scoreFileInput" accept=".bed,.txt,.tsv,.csv" style="display:none;">
-        </div>
-        <span class="upload-hint">Standard BED format (chr, start, end) &mdash; or drag a file anywhere on the page</span>
-        <div class="upload-drop-hint">Drop your BED file here</div>
-      </div>
-      <div class="score-preset-panel">
-        <h4>Or choose a preset panel</h4>
-        <div id="scorePresets"></div>
-      </div>
-    </div>
 
     <div class="todo-marker">TODO [BED VALIDATION]: Wire server-side BED parser with format detection, auto-conversion, and region validation.</div>
 

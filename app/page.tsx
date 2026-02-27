@@ -16,10 +16,10 @@ const modules = [
     ),
   },
   {
-    name: "BED Viz",
+    name: "Genome Performance Explorer",
     href: "/bed-viz",
     description:
-      "Genomic performance visualization. Upload BED files to see coverage and variant calling quality across platforms.",
+      "Browse genes, build panels, and see how your targets perform on LSMC's clinical genome.",
     status: "Prototype",
     audience: "Customer-facing",
     icon: (
