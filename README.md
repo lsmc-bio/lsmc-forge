@@ -1,15 +1,15 @@
 # LSMC Forge
 
-Product and workflow prototypes for LSMC. Some customer-facing, others for internal business orchestration. All functional, all connected.
+Product and workflow prototypes for LSMC. Some customer-facing, others for internal business orchestration.
 
 ## Modules
 
 | Module | Description | Audience | Status |
 |--------|-------------|----------|--------|
 | **Deal Agent** | Conversational deal configurator — chat with Claude to build pricing estimates and deal configs from LSMC's 8-dimension model | Internal (Andrew, Eric) | Phase 0 |
-| **BED Viz** | Genomic performance visualization — upload BED files to see coverage and variant calling metrics across platforms | Customer-facing | Prototype (porting) |
+| **Genome Performance Explorer** | Browse genes, build panels, and see how your targets perform on LSMC's clinical genome — upload BED files or use preset panels | Customer-facing | Prototype |
 | **Deal Wizard** | Structured 8-dimension deal configuration form with archetype presets, pricing engine, and SOW generation | Internal | Planned |
-| **Pipeline Viz** | Interactive bioinformatics pipeline visualization — scroll-driven animation showing sample-to-report journey | Customer-facing (website) | Prototype (porting) |
+| **Pipeline Viz** | Interactive bioinformatics pipeline visualization — scroll-driven animation with stage fade-ins showing sample-to-report journey | Customer-facing (website) | Prototype |
 
 ## Architecture
 
@@ -19,7 +19,7 @@ Single Next.js 15 app with route-based modules. The Deal Agent and Deal Wizard s
 app/
 ├── page.tsx              # Landing page (module index)
 ├── deal-agent/           # Chat UI (Vercel AI SDK + Claude)
-├── bed-viz/              # Genomic performance viz
+├── bed-viz/              # Genome Performance Explorer (iframe → public/bed-viz-app/)
 ├── deal-wizard/          # Form-based configurator
 ├── pipeline-viz/         # Scroll-driven pipeline animation
 └── api/chat/             # AI SDK streaming endpoint
@@ -28,9 +28,9 @@ lib/
 ├── config/               # 8-dimension schema, archetypes, capabilities
 ├── sheets/               # Google Sheets API client (COGS data)
 └── prompts/              # System prompts (internal + customer modes)
-docs/
-├── design/               # Design specs per module
-└── adr/                  # Architecture Decision Records
+public/
+├── brand/                # LSMC SVG logos (wordmark, logo mark)
+└── bed-viz-app/          # Standalone BED viz prototype (HTML/CSS/JS)
 ```
 
 ## Tech Stack
@@ -38,8 +38,8 @@ docs/
 - **Framework:** Next.js 15 (App Router, Turbopack)
 - **AI:** Vercel AI SDK v4 + Claude Haiku 4.5 (default) / Sonnet 4.6 (complex reasoning)
 - **Pricing data:** Google Sheets API v4 (read-only, COGS Calculator)
-- **UI:** React 19 + Tailwind CSS 4
-- **Deploy:** Vercel Pro (~$20/mo for 300s function timeout)
+- **UI:** React 19 + Tailwind CSS 4 (LSMC brand tokens: DM Sans + JetBrains Mono, dark theme)
+- **Deploy:** Vercel (Hobby tier, auto-deploy from main)
 
 ## Getting Started
 
