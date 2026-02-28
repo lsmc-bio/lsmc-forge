@@ -141,6 +141,104 @@
   border-bottom: 1px solid var(--color-lsmc-slate);
 }
 
+/* -----------------------------------------------------------------------
+   Driver.js tour — LSMC dark-theme overrides
+   ----------------------------------------------------------------------- */
+.lsmc-tour-popover {
+  background: var(--color-lsmc-deep) !important;
+  border: 1px solid var(--color-lsmc-accent) !important;
+  border-radius: 12px !important;
+  box-shadow:
+    0 0 20px rgba(59, 130, 246, 0.25),
+    0 0 60px rgba(59, 130, 246, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.5) !important;
+  color: var(--color-lsmc-ice) !important;
+  font-family: var(--font-sans) !important;
+}
+
+.lsmc-tour-popover .driver-popover-title {
+  font-family: var(--font-sans) !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  color: var(--color-lsmc-white) !important;
+}
+
+.lsmc-tour-popover .driver-popover-description {
+  font-family: var(--font-sans) !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.6 !important;
+  color: var(--color-lsmc-mist) !important;
+}
+
+.lsmc-tour-popover .driver-popover-progress-text {
+  font-family: var(--font-mono) !important;
+  font-size: 0.625rem !important;
+  color: var(--color-lsmc-steel) !important;
+}
+
+.lsmc-tour-popover .driver-popover-prev-btn {
+  background: transparent !important;
+  border: 1px solid var(--color-lsmc-steel) !important;
+  border-radius: 6px !important;
+  color: var(--color-lsmc-mist) !important;
+  font-family: var(--font-sans) !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  padding: 0.375rem 0.875rem !important;
+  text-shadow: none !important;
+  transition: all 0.15s !important;
+}
+
+.lsmc-tour-popover .driver-popover-prev-btn:hover {
+  border-color: var(--color-lsmc-accent) !important;
+  color: var(--color-lsmc-white) !important;
+}
+
+.lsmc-tour-popover .driver-popover-next-btn,
+.lsmc-tour-popover .driver-popover-done-btn {
+  background: var(--color-lsmc-accent) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  color: white !important;
+  font-family: var(--font-sans) !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  padding: 0.375rem 0.875rem !important;
+  text-shadow: none !important;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3) !important;
+  transition: all 0.15s !important;
+}
+
+.lsmc-tour-popover .driver-popover-next-btn:hover,
+.lsmc-tour-popover .driver-popover-done-btn:hover {
+  background: var(--color-lsmc-glow) !important;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.4) !important;
+}
+
+.lsmc-tour-popover .driver-popover-close-btn {
+  color: var(--color-lsmc-steel) !important;
+}
+
+.lsmc-tour-popover .driver-popover-close-btn:hover {
+  color: var(--color-lsmc-white) !important;
+}
+
+.lsmc-tour-popover .driver-popover-arrow-side-left .driver-popover-arrow,
+.lsmc-tour-popover .driver-popover-arrow-side-right .driver-popover-arrow,
+.lsmc-tour-popover .driver-popover-arrow-side-top .driver-popover-arrow,
+.lsmc-tour-popover .driver-popover-arrow-side-bottom .driver-popover-arrow {
+  border-color: var(--color-lsmc-accent) !important;
+}
+
+/* Glow ring around highlighted stage */
+.driver-active-element {
+  box-shadow:
+    0 0 0 2px var(--color-lsmc-accent),
+    0 0 20px rgba(59, 130, 246, 0.3),
+    0 0 40px rgba(59, 130, 246, 0.1) !important;
+  border-radius: 12px !important;
+}
+
 /* Subtle pulse for thinking state */
 @keyframes thinking-pulse {
   0%, 100% { opacity: 0.4; }

@@ -12,6 +12,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^1.0.0",
     "ai": "^4.0.0",
+    "driver.js": "^1.4.0",
     "next": "^15.0.0",
     "next-auth": "^5.0.0-beta.30",
     "react": "^19.0.0",

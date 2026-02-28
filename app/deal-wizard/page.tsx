@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducer, useMemo } from "react";
+import { useReducer, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -16,7 +16,8 @@ import PricingBreakdown from "./_components/PricingBreakdown";
 import SOWPreview from "./_components/SOWPreview";
 import ConfigCompare from "./_components/ConfigCompare";
 import AgentDrawer from "./_components/AgentDrawer";
-import { useState } from "react";
+import AuthFooter from "./_components/AuthFooter";
+import OnboardingTour, { startTour } from "./_components/OnboardingTour";
 
 type Tab = "pricing" | "sow" | "compare";
 
@@ -33,6 +34,9 @@ export default function DealWizard() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-lsmc-night">
+      {/* Onboarding tour (auto-shows on first visit) */}
+      <OnboardingTour />
+
       {/* Header */}
       <header className="flex shrink-0 items-center gap-3 border-b border-lsmc-steel/30 px-6 py-3">
         <Link href="/" className="flex items-center gap-2">
@@ -51,12 +55,22 @@ export default function DealWizard() {
         )}
         <div className="ml-auto flex items-center gap-2">
           <button
+            onClick={() => startTour()}
+            className="flex h-6 w-6 items-center justify-center rounded-md text-lsmc-steel transition-colors hover:bg-lsmc-slate hover:text-lsmc-mist"
+            title="Show walkthrough"
+          >
+            <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+              <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0ZM8.94 6.94a.75.75 0 1 1-1.061-1.061 3 3 0 1 1 2.871 5.026v.345a.75.75 0 0 1-1.5 0v-.5c0-.72.57-1.172 1.081-1.287A1.5 1.5 0 1 0 8.94 6.94ZM10 15a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+            </svg>
+          </button>
+          <button
             onClick={() => dispatch({ type: "RESET" })}
             className="rounded-md px-2.5 py-1 text-[10px] font-medium text-lsmc-steel transition-colors hover:text-lsmc-mist"
           >
             Reset
           </button>
           <button
+            id="tour-agent-btn"
             onClick={() => setAgentOpen(true)}
             className="flex items-center gap-1.5 rounded-md border border-lsmc-accent/30 bg-lsmc-accent/5 px-2.5 py-1 text-[10px] font-semibold text-lsmc-glow transition-all hover:border-lsmc-accent/50 hover:bg-lsmc-accent/10"
           >
@@ -75,32 +89,38 @@ export default function DealWizard() {
           <div className="flex-1 overflow-y-auto px-4 py-4">
             <div className="space-y-5">
               {/* Deal Metadata */}
-              <Section title="Deal Info">
-                <DealMetadata
-                  clientName={state.clientName}
-                  dealName={state.dealName}
-                  term={state.term}
-                  annualVolume={state.annualVolume}
-                  marginPct={state.marginPct}
-                  batchSize={state.batchSize}
-                  dispatch={dispatch}
-                />
-              </Section>
+              <div id="tour-deal-info">
+                <Section title="Deal Info">
+                  <DealMetadata
+                    clientName={state.clientName}
+                    dealName={state.dealName}
+                    term={state.term}
+                    annualVolume={state.annualVolume}
+                    marginPct={state.marginPct}
+                    batchSize={state.batchSize}
+                    dispatch={dispatch}
+                  />
+                </Section>
+              </div>
 
               {/* Preset Selector */}
-              <Section title="Product Preset">
-                <PresetSelector
-                  selectedId={state.selectedPresetId}
-                  onSelect={(id) =>
-                    dispatch({ type: "SELECT_PRESET", presetId: id })
-                  }
-                />
-              </Section>
+              <div id="tour-presets">
+                <Section title="Product Preset">
+                  <PresetSelector
+                    selectedId={state.selectedPresetId}
+                    onSelect={(id) =>
+                      dispatch({ type: "SELECT_PRESET", presetId: id })
+                    }
+                  />
+                </Section>
+              </div>
 
               {/* Config Overrides */}
-              <Section title="Configuration">
-                <ConfigForm config={state.config} dispatch={dispatch} />
-              </Section>
+              <div id="tour-config">
+                <Section title="Configuration">
+                  <ConfigForm config={state.config} dispatch={dispatch} />
+                </Section>
+              </div>
             </div>
           </div>
         </aside>
@@ -118,6 +138,7 @@ export default function DealWizard() {
             ).map((tab) => (
               <button
                 key={tab.id}
+                id={`tour-tab-${tab.id}`}
                 onClick={() => setActiveTab(tab.id)}
                 className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
                   activeTab === tab.id
@@ -167,6 +188,9 @@ export default function DealWizard() {
           </div>
         </main>
       </div>
+
+      {/* Auth footer */}
+      <AuthFooter />
 
       {/* Agent drawer */}
       <AgentDrawer open={agentOpen} onClose={() => setAgentOpen(false)} />
