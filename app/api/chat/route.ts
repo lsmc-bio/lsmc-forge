@@ -3,7 +3,7 @@ import { anthropic } from "@ai-sdk/anthropic";
 import { streamText, tool } from "ai";
 import { z } from "zod";
 import { calculateCOGS, applyDefaults } from "@/lib/engine/cogs-calculator";
-import { calculateCapacityImpact, DEFAULT_CAPACITY } from "@/lib/engine/capacity";
+import { calculateCapacityImpact, DEFAULT_CAPACITY, calculateLabCapacity, weeklySampleCapacity } from "@/lib/engine/capacity";
 import { PLATFORMS, samplesPerRun, seqCostPerSample } from "@/lib/data/platforms";
 import { PRODUCT_PRESETS } from "@/lib/config/presets";
 import {
@@ -13,7 +13,7 @@ import {
   TAT_DEFAULTS,
 } from "@/lib/config/dimensions";
 import { ANNUAL_OVERHEAD } from "@/lib/data/overhead";
-import type { DealInput, COGSBreakdown } from "@/lib/engine/types";
+import type { DealInput, COGSBreakdown, CapacityContext } from "@/lib/engine/types";
 
 export const maxDuration = 60;
 
@@ -77,13 +77,13 @@ The pricing engine calculates cost across **14 stages**:
 
 ## CAPACITY CONTEXT (current lab)
 
-Default lab configuration:
-- 2 × UG 100 (S4 wafers), ~500 samples/week at 30x
-- 1 × NovaSeq X+ (25B FCs), ~200 samples/week at 30x
-- 1 × PromethION 2 Solo, ~20 samples/week at 10x
-Total: ~720 samples/week
+Default lab configuration (85% uptime, Gb/week bandwidth model):
+- 1 × NovaSeq X+ (25B FCs, 2 positions): ~405 samples/week @30x capacity, current 15/week
+- 2 × UG 100 (S4 wafers, 1 position each): ~490 samples/week @30x capacity, current 50/week
+- 1 × PromethION 2 Solo (1 active position): ~20 samples/week @10x capacity, current 3/week
+Total capacity: ~915 samples/week @30x | Current volume: 68 samples/week | Run rate: ~7.5%
 
-New volume can be **absorbed** (fits in spare capacity = cheaper) or **incremental** (needs new runs = standalone cost). Use the capacity tool to model this.
+New volume is classified by impact on run rate: GREEN (<60%), YELLOW (60-85%), ORANGE (85-100%), RED (>100%). Volume can be **absorbed** (fits in spare Gb capacity) or **incremental** (needs new runs). Use the capacity tool to model this.
 
 ## PLATFORMS
 
@@ -340,34 +340,46 @@ export async function POST(req: Request) {
             .describe("Coverage depth of current volume"),
         }),
         execute: async ({ instruments, currentWeeklySamples, currentCoverageX }) => {
-          const context = { instruments, currentWeeklySamples, currentCoverageX };
+          // Distribute total volume across instruments proportionally to Gb capacity
+          const caps = instruments.map((inst) => ({
+            ...inst,
+            cap: weeklySampleCapacity(inst.configId, inst.count, currentCoverageX),
+          }));
+          const totalCap = caps.reduce((s, c) => s + c.cap, 0);
 
-          // Show capacity summary per instrument
-          const summary = instruments.map((inst) => {
-            const config = PLATFORMS.find((p) => p.id === inst.configId);
-            if (!config) return { configId: inst.configId, error: "Unknown config" };
-            const spr = samplesPerRun(config, currentCoverageX);
-            const weeklyCapacity = spr * (config.maxRunsPerYear / 52) * inst.count;
-            return {
-              instrument: `${config.instrument} (${config.consumable})`,
-              count: inst.count,
-              samplesPerRun: spr,
-              weeklyCapacity: Math.round(weeklyCapacity),
-              costPerSample: round(seqCostPerSample(config, currentCoverageX)),
-            };
-          });
+          const context: CapacityContext = {
+            instruments: caps.map((c) => ({
+              configId: c.configId,
+              count: c.count,
+              weeklySamples: totalCap > 0
+                ? Math.round(currentWeeklySamples * (c.cap / totalCap))
+                : 0,
+              coverageX: currentCoverageX,
+            })),
+            currentWeeklySamples,
+            currentCoverageX,
+          };
 
-          const totalWeeklyCapacity = summary.reduce(
-            (sum, s) => sum + ("weeklyCapacity" in s && typeof s.weeklyCapacity === "number" ? s.weeklyCapacity : 0),
-            0,
-          );
+          const snapshot = calculateLabCapacity(context);
 
           return {
             capacityContext: context,
-            instrumentSummary: summary,
-            totalWeeklyCapacity,
-            currentUtilization: round(currentWeeklySamples / totalWeeklyCapacity),
-            spareWeeklyCapacity: totalWeeklyCapacity - currentWeeklySamples,
+            instrumentSummary: snapshot.platforms.map((p) => ({
+              instrument: p.instrument,
+              count: p.count,
+              positions: p.positions,
+              weeklyGbCapacity: p.weeklyGbCapacity,
+              weeklySampleCapacity: p.weeklySampleCapacity,
+              currentWeeklySamples: p.currentWeeklySamples,
+              runRate: p.runRate,
+              classification: p.classification,
+              packing: p.packing,
+            })),
+            totalWeeklyGb: snapshot.totalWeeklyGb,
+            totalWeeklySamples: round(snapshot.platforms.reduce((s, p) => s + p.weeklySampleCapacity, 0)),
+            overallRunRate: snapshot.overallRunRate,
+            overallClassification: snapshot.overallClassification,
+            spareWeeklyGb: snapshot.totalWeeklyGb - snapshot.totalCurrentGb,
           };
         },
       }),
