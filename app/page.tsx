@@ -32,8 +32,8 @@ const modules = [
     name: "Deal Wizard",
     href: "/deal-wizard",
     description:
-      "Structured deal configuration. The 8-dimension configurator with archetype presets, pricing engine, and SOW generation.",
-    status: "Planned",
+      "Structured deal configuration. 8-dimension configurator with archetype presets, real-time pricing, and SOW generation.",
+    status: "Live",
     audience: "Internal",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5">
