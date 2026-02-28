@@ -1,40 +1,52 @@
 /**
  * LSMC Sequencing Platform Configurations
- * Source: COGS Calculator v2 GSheet — Seq Config tab
+ * Source: COGS Calculator v2 GSheet — Seq Config + Lab Capacity tabs
  * Last synced: 2026-02-27
  *
- * CRITICAL FIX: samplesPerRun is now DYNAMIC — calculated from coverage
- * depth, not pre-baked. This is the root cause of the "$250 for lpWGS" bug.
+ * Platform-specific overhead parameters (dup rate, CV buffer) match
+ * the Lab Capacity tab. Output Gb and FC costs from Seq Config tab.
  */
 
 import type { PlatformConfig } from "@/lib/engine/types";
 
 // ---------------------------------------------------------------------------
+// Core constants
+// ---------------------------------------------------------------------------
+
+const GENOME_SIZE_GB = 3.3; // human genome
+const UNMAPPED_RATE = 0.02; // 2% unmapped (universal across platforms)
+export const UPTIME_FACTOR = 0.85; // 85% uptime (maintenance, calibration, changeover)
+export const HOURS_PER_WEEK = 168;
+
+// ---------------------------------------------------------------------------
 // Core formula: how many Gb does one sample need at a given coverage?
 // ---------------------------------------------------------------------------
 
-const GENOME_SIZE_GB = 3.1; // human genome
-const DUP_RATE = 0.05; // 5% duplication
-const UNMAPPED_RATE = 0.02; // 2% unmapped
-const CV_BUFFER = 1.1; // 10% coefficient of variation buffer
-
-export function requiredGbPerSample(coverageX: number): number {
-  return (
-    GENOME_SIZE_GB * coverageX * (1 + DUP_RATE) * (1 + UNMAPPED_RATE) * CV_BUFFER
-  );
+/**
+ * Required Gb per sample at a given coverage depth.
+ * Uses platform-specific dup rate and CV buffer when config is provided,
+ * otherwise falls back to Illumina defaults (dup=0.05, CV=1.1).
+ */
+export function requiredGbPerSample(
+  coverageX: number,
+  config?: PlatformConfig,
+): number {
+  const dup = config?.dupRate ?? 0.05;
+  const cv = config?.cvBuffer ?? 1.1;
+  return GENOME_SIZE_GB * coverageX * (1 + dup) * (1 + UNMAPPED_RATE) * cv;
 }
 
 /**
  * Dynamic samples-per-run at any coverage depth.
- * At 30x on a 25B FC (2500 Gb): floor(2500 / 109.5) = 22
- * At 1.5x on UG S4 (2500 Gb): floor(2500 / 5.48) = 456
+ * At 30x on a 25B FC (8000 Gb, ILMN overheads): floor(8000 / 116.6) = 68
+ * At 30x on UG S4 (3000 Gb, UG overheads): floor(3000 / 124.8) = 24
  */
 export function samplesPerRun(
   config: PlatformConfig,
   coverageX: number,
 ): number {
   if (coverageX <= 0) return 0;
-  const gbPerSample = requiredGbPerSample(coverageX);
+  const gbPerSample = requiredGbPerSample(coverageX, config);
   return Math.floor(config.outputGb / gbPerSample);
 }
 
@@ -65,7 +77,7 @@ export function instrumentAmortPerSample(
 }
 
 // ---------------------------------------------------------------------------
-// Platform definitions — from GSheet Seq Config tab
+// Platform definitions — from GSheet Seq Config + Lab Capacity tabs
 // ---------------------------------------------------------------------------
 
 export const PLATFORMS: PlatformConfig[] = [
@@ -75,36 +87,45 @@ export const PLATFORMS: PlatformConfig[] = [
     platform: "illumina",
     instrument: "NovaSeq X Plus",
     consumable: "25B Flowcell",
-    outputGb: 2500,
+    outputGb: 8000,
     runTimeHours: 48,
-    listCostPerRun: 8550,
+    listCostPerRun: 14_865,
     instrumentCost: 985_000,
     amortYears: 4,
-    maxRunsPerYear: 156,
+    maxRunsPerYear: 309,
+    positions: 2,
+    dupRate: 0.05,
+    cvBuffer: 1.1,
   },
   {
     id: "novaseq_10b",
     platform: "illumina",
     instrument: "NovaSeq X Plus",
     consumable: "10B Flowcell",
-    outputGb: 1000,
-    runTimeHours: 48,
-    listCostPerRun: 5540,
+    outputGb: 3000,
+    runTimeHours: 25,
+    listCostPerRun: 8_615,
     instrumentCost: 985_000,
     amortYears: 4,
-    maxRunsPerYear: 156,
+    maxRunsPerYear: 594,
+    positions: 2,
+    dupRate: 0.05,
+    cvBuffer: 1.1,
   },
   {
     id: "novaseq_1.5b",
     platform: "illumina",
     instrument: "NovaSeq X Plus",
     consumable: "1.5B Flowcell",
-    outputGb: 150,
+    outputGb: 450,
     runTimeHours: 24,
-    listCostPerRun: 1675,
+    listCostPerRun: 1_675,
     instrumentCost: 985_000,
     amortYears: 4,
-    maxRunsPerYear: 312,
+    maxRunsPerYear: 619,
+    positions: 2,
+    dupRate: 0.05,
+    cvBuffer: 1.1,
   },
 
   // --- Ultima Genomics UG 100 ---
@@ -113,24 +134,30 @@ export const PLATFORMS: PlatformConfig[] = [
     platform: "ultima",
     instrument: "UG 100",
     consumable: "S4 Wafer",
-    outputGb: 2500,
-    runTimeHours: 20,
-    listCostPerRun: 2400,
+    outputGb: 3000,
+    runTimeHours: 14,
+    listCostPerRun: 1_600,
     instrumentCost: 599_000,
     amortYears: 4,
-    maxRunsPerYear: 365,
+    maxRunsPerYear: 530,
+    positions: 1,
+    dupRate: 0.03,
+    cvBuffer: 1.2,
   },
   {
     id: "ug100_s2",
     platform: "ultima",
     instrument: "UG 100",
     consumable: "S2 Wafer",
-    outputGb: 750,
+    outputGb: 1500,
     runTimeHours: 20,
-    listCostPerRun: 1300,
+    listCostPerRun: 1_300,
     instrumentCost: 599_000,
     amortYears: 4,
-    maxRunsPerYear: 365,
+    maxRunsPerYear: 371,
+    positions: 1,
+    dupRate: 0.03,
+    cvBuffer: 1.2,
   },
 
   // --- Oxford Nanopore ---
@@ -139,24 +166,30 @@ export const PLATFORMS: PlatformConfig[] = [
     platform: "ont",
     instrument: "PromethION 2 Solo",
     consumable: "PromethION Flowcell",
-    outputGb: 100,
+    outputGb: 200,
     runTimeHours: 72,
     listCostPerRun: 900,
     instrumentCost: 25_000,
     amortYears: 4,
-    maxRunsPerYear: 104,
+    maxRunsPerYear: 206,
+    positions: 2,
+    dupRate: 0.05,
+    cvBuffer: 1.1,
   },
   {
     id: "promethion_48",
     platform: "ont",
     instrument: "PromethION 48",
     consumable: "PromethION Flowcell",
-    outputGb: 100,
+    outputGb: 200,
     runTimeHours: 72,
     listCostPerRun: 900,
     instrumentCost: 295_000,
     amortYears: 4,
-    maxRunsPerYear: 2496,
+    maxRunsPerYear: 4946,
+    positions: 48,
+    dupRate: 0.05,
+    cvBuffer: 1.1,
   },
 ];
 

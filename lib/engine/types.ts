@@ -97,7 +97,10 @@ export interface PlatformConfig {
   listCostPerRun: number; // consumable cost per run
   instrumentCost: number; // capital cost
   amortYears: number;
-  maxRunsPerYear: number; // theoretical max throughput
+  maxRunsPerYear: number; // theoretical max (all positions, 85% uptime)
+  positions: number; // FC/wafer positions on this instrument
+  dupRate: number; // platform-specific duplication rate (e.g., 0.05)
+  cvBuffer: number; // coverage variance buffer multiplier (e.g., 1.1 = 10%)
 }
 
 // ---------------------------------------------------------------------------
@@ -148,8 +151,16 @@ export interface AnalysisConfig {
 // Capacity
 // ---------------------------------------------------------------------------
 
+export type DealFitClassification = "GREEN" | "YELLOW" | "ORANGE" | "RED";
+
 export interface CapacityContext {
-  instruments: { configId: string; count: number }[];
+  instruments: {
+    configId: string;
+    count: number;
+    activePositions?: number; // positions per instrument in use (defaults to config.positions)
+    weeklySamples?: number; // current volume on this platform
+    coverageX?: number; // coverage depth of current volume
+  }[];
   currentWeeklySamples: number;
   currentCoverageX: number;
 }
@@ -160,4 +171,7 @@ export interface CapacityResult {
   utilizationBefore: number;
   utilizationAfter: number;
   additionalRunsNeeded: number;
+  dealFitClassification?: DealFitClassification;
+  packingEfficiency?: number; // 0-1, how well samples fill FCs
+  wastedSlotsPerRun?: number;
 }
